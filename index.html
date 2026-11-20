@@ -23,7 +23,7 @@ h1{font-weight:800;font-size:clamp(34px,6vw,52px);line-height:1.05;margin:0 0 8p
 h2{font-weight:800;font-size:22px;margin:0 0 12px}
 .lead{color:var(--mute);margin:0;max-width:60ch}
 .grid{display:grid;gap:clamp(20px,3vw,40px);grid-template-columns:minmax(0,1fr)}
-@media(min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
+@media(min-width:900px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}.stage{position:sticky;top:16px}}
 .stage{background:radial-gradient(120% 80% at 50% 0%,#1b262b,var(--panel));border:1px solid var(--line);border-radius:22px;padding:clamp(20px,4vw,36px);display:grid;gap:18px;justify-items:center}
 .lamp{width:clamp(170px,46vw,250px);aspect-ratio:1;border-radius:50%;padding:14px;background:conic-gradient(from 210deg,#5b6870,#c9d2d6,#6b787f,#2d363b,#5b6870);box-shadow:0 18px 40px #0009,inset 0 2px 0 #fff3}
 .lens{position:relative;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a3338,#0a0e10 70%);box-shadow:inset 0 6px 18px #000c;transition:background .04s,box-shadow .04s;overflow:hidden}
@@ -40,24 +40,36 @@ h2{font-weight:800;font-size:22px;margin:0 0 12px}
 .el.d{width:10px}.el.l{width:28px}
 .ch.cur{background:#ffffff0d}.ch.cur b{color:var(--ink)}
 .el.lit{background:var(--lamp);box-shadow:0 0 10px var(--lamp)}
-.gap{flex:none;width:18px;align-self:center;border-top:2px dotted #55656c}
+.gap{flex:none;align-self:center;height:16px;border-top:2px dotted #55656c}
 .empty{color:var(--mute);font-size:14px;margin:0 auto}
 .panel{display:grid;gap:18px}
 label,.lbl{font-weight:600;font-size:15px}
 textarea{width:100%;font:inherit;font-size:18px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;resize:vertical;min-height:90px}
+textarea.mono{font:600 18px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.08em}
 textarea:focus-visible,button:focus-visible,input:focus-visible,.chip:has(input:focus-visible){outline:3px solid var(--sig);outline-offset:2px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 button{font:inherit;font-weight:600;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
 button:active{transform:translateY(1px)}
 .primary{background:var(--sig);border-color:var(--sig);color:#fff;font-size:18px;flex:1 1 160px;min-height:56px}
 .ghost{flex:0 1 120px;min-height:56px}
-.keys{gap:6px}
-.keys button{flex:1 1 44px;padding:0 10px;font-size:20px;min-width:48px}
-.keys button.wide{flex:1 1 80px;font-size:15px}
-.code{display:flex;gap:10px;align-items:flex-start;background:#0a0f11;border:1px solid var(--line);border-radius:14px;padding:10px 10px 10px 14px}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;margin-top:8px}
+.seg button{border:0;background:transparent;font-size:15px;line-height:1.2;padding:6px 8px;min-height:52px;color:var(--mute)}
+.seg button small{display:block;font-weight:400;font-size:12px}
+.seg button[aria-pressed=true]{background:var(--sig);color:#fff}
+.seg.mini{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:6px}
+.seg.mini button{min-height:44px}
+.keys{display:grid;grid-template-columns:1fr 1fr 1.6fr 1fr 1fr;gap:6px;margin-top:8px}
+.keys.hidden{display:none}
+.keys button{padding:0 6px;font-size:24px;min-height:52px}
+.keys button.wide{font-size:15px}
+.code{display:flex;gap:10px;align-items:flex-start;background:#0a0f11;border:1px solid var(--line);border-radius:14px;padding:10px 10px 10px 14px;margin-top:6px}
 .code code{flex:1;font:600 17px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--lamp);overflow-wrap:anywhere;padding-top:6px}
 .code button{flex:none}
 .meta{color:var(--mute);font-size:14px;margin:4px 0 0}
+.hint{color:var(--mute);font-size:14px;margin:6px 0 8px}
+.banner{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:#fff4cf12;border:1px solid #fff4cf40;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:8px}
+.banner button{min-height:40px;font-size:14px;border-color:var(--lamp);color:var(--lamp)}
+.box{border:1px solid var(--line);border-radius:16px;padding:14px;background:#0a0f11}
 .chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .chip{display:flex;gap:10px;align-items:center;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-weight:600}
 .chip input{width:20px;height:20px;accent-color:var(--sig);margin:0}
@@ -71,6 +83,7 @@ output{color:var(--mute);white-space:nowrap}
 .chart button{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:0 12px}
 .chart button span{font:600 15px ui-monospace,Menlo,monospace;color:var(--lamp);letter-spacing:.08em}
 .how{color:var(--mute);font-size:15px;max-width:70ch}
+.hidden{display:none!important}
 #flash{position:fixed;inset:0;z-index:50;background:#000;display:none;align-items:flex-end;justify-content:center;padding:28px;cursor:pointer}
 #flash.show{display:flex}#flash.on{background:#fff}
 #flash span{color:#808080;font-weight:600;font-size:14px}
@@ -95,22 +108,54 @@ output{color:var(--mute);white-space:nowrap}
 
     <section class="panel">
       <div>
-        <label for="msg">Messaggio</label>
-        <textarea id="msg" rows="3" autocomplete="off" autocapitalize="characters" spellcheck="false">SOS</textarea>
-        <p class="meta" style="margin:4px 0 8px">Scrivi un testo oppure incolla punti e linee: lettere separate da uno spazio, parole separate da / o da un a capo.</p>
-        <div class="row keys" id="keys">
-          <button data-ins="." aria-label="Punto">·</button><button data-ins="-" aria-label="Linea">–</button><button data-ins=" " class="wide">Spazio</button><button data-ins=" / " class="wide">/ parola</button><button data-del="1" aria-label="Cancella">⌫</button><button id="paste" class="wide">Incolla</button><button id="clear" class="wide">Svuota</button>
-        </div>
-        <div class="row" style="margin-top:8px" id="presets">
-          <button data-p="SOS">SOS</button><button data-p="CIAO">CIAO</button><button data-p="AIUTO">AIUTO</button><button data-p="TUTTO OK">TUTTO OK</button>
+        <span class="lbl">Cosa trasmettere</span>
+        <div class="seg" id="mode" role="group" aria-label="Modalità">
+          <button data-m="text">Testo<small>in Morse</small></button>
+          <button data-m="custom">Testo<small>alfabeto mio</small></button>
+          <button data-m="seq">Sequenza<small>· – spazio</small></button>
         </div>
       </div>
 
       <div>
-        <span class="lbl" id="codeLbl">In codice Morse</span>
-        <div class="code" style="margin-top:6px"><code id="code"></code><button id="copy">Copia</button></div>
-        <p class="meta" id="meta"></p>
+        <label for="msg" id="msgLbl">Messaggio</label>
+        <p class="hint" id="hint"></p>
+        <textarea id="msg" rows="3" autocomplete="off" autocapitalize="characters" spellcheck="false">SOS</textarea>
+        <div class="banner hidden" id="suggest">
+          <span>Hai scritto solo punti e linee: in modalità Testo diventano punteggiatura.</span>
+          <button id="toSeq">Trasmettili così come sono</button>
+        </div>
+        <div class="row keys hidden" id="keys">
+          <button data-ins="." aria-label="Punto">·</button><button data-ins="-" aria-label="Linea">–</button><button data-ins=" " class="wide">Spazio</button><button data-ins="/" aria-label="Pausa lunga">/</button><button data-del="1" aria-label="Cancella">⌫</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="paste">Incolla</button><button id="clear">Svuota</button>
+          <span id="presets" class="row"><button data-p="SOS">SOS</button><button data-p="CIAO">CIAO</button><button data-p="TUTTO OK">TUTTO OK</button></span>
+        </div>
       </div>
+
+      <div class="box hidden" id="seqBox">
+        <span class="lbl">Quanto dura uno spazio</span>
+        <div class="seg mini" id="spSeg" role="group" aria-label="Durata dello spazio">
+          <button data-u="2">Breve<small>pausa di 2</small></button>
+          <button data-u="3">Normale<small>3, tra lettere</small></button>
+          <button data-u="7">Lungo<small>7, tra parole</small></button>
+        </div>
+        <p class="meta">Punto = lampo di 1 · linea = lampo di 3 · tra due segni attaccati buio di 1 · ogni spazio = buio della durata scelta (più spazi si sommano) · / o a capo = buio di 7. L'unità dipende dalla velocità.</p>
+      </div>
+
+      <div class="box hidden" id="alphaBox">
+        <label for="alpha">Il tuo alfabeto</label>
+        <p class="hint">Una riga per carattere: il carattere, poi = e la sua sequenza di punti e linee. Puoi usare anche gruppi di lettere, per esempio <b>CH = ----</b>.</p>
+        <textarea id="alpha" class="mono" rows="8" spellcheck="false" autocapitalize="characters"></textarea>
+        <div class="row" style="margin-top:8px"><button id="aMorse">Parti dal Morse</button><button id="aClear">Svuota alfabeto</button><button id="aCopy">Copia alfabeto</button></div>
+        <p class="meta" id="alphaMsg"></p>
+      </div>
+
+      <div id="codeWrap">
+        <span class="lbl">Sequenza che verrà trasmessa</span>
+        <div class="code"><code id="code"></code><button id="copy">Copia</button></div>
+      </div>
+      <p class="meta" id="meta" style="margin-top:-10px"></p>
 
       <div>
         <span class="lbl">Come trasmettere</span>
@@ -139,8 +184,8 @@ output{color:var(--mute);white-space:nowrap}
 
 <section class="band" style="padding-top:0">
   <div class="wrap">
-    <h2>Alfabeto</h2>
-    <p class="how">Tocca un carattere per sentirlo e vederlo lampeggiare. Tempi standard: il punto vale 1, la linea 3, la pausa tra segni 1, tra lettere 3, tra parole 7. Le lettere accentate vengono trasmesse senza accento.</p>
+    <h2>Alfabeto Morse</h2>
+    <p class="how">Tocca un carattere per vederlo lampeggiare. Tempi standard: il punto vale 1, la linea 3, la pausa tra segni 1, tra lettere 3, tra parole 7. Nella modalità Testo le lettere accentate vengono trasmesse senza accento.</p>
     <div class="chart" id="chart"></div>
     <p class="how" style="margin-top:18px"><b>Sulla torcia LED.</b> La prima volta il browser chiede il permesso di usare la fotocamera: serve solo per accendere il flash, nessuna immagine viene vista o registrata. Funziona con Chrome su Android. Su iPhone Safari di solito non lascia comandare il flash: in quel caso la pagina usa lo schermo.</p>
   </div>
@@ -153,63 +198,126 @@ output{color:var(--mute);white-space:nowrap}
 const M={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',
 '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
 '.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','@':'.--.-.'};
-const $=id=>document.getElementById(id);
-const msg=$('msg'),tape=$('tape'),code=$('code'),codeLbl=$('codeLbl'),meta=$('meta'),lamp=$('lamp'),flash=$('flash'),statusEl=$('status'),noteEl=$('note'),wpm=$('wpm'),wpmOut=$('wpmOut'),loop=$('loop');
-const outs={screen:$('oScreen'),sound:$('oSound'),vib:$('oVib'),torch:$('oTorch')};
-const KEY='morse-luce-site-v1';
-const tVid=Object.assign(document.createElement('video'),{muted:true,playsInline:true});tVid.setAttribute('playsinline','');tVid.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';document.body.appendChild(tVid);
-let run=0,ctx=null,gain=null,tStream=null,tTrack=null,wake=null,curCh=null,curEl=null;
-
-const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
 const R=Object.fromEntries(Object.entries(M).map(([k,v])=>[v,k]));
-const toMorse=s=>s.replace(/[·•∙⋅*]/g,'.').replace(/[−–—‒_]/g,'-').replace(/\|/g,'/');
-const isMorse=s=>/[.\-·•∙⋅*−–—‒_]/.test(s)&&/^[\s.\-·•∙⋅*−–—‒_\/|]+$/.test(s);
-function parse(txt){
-  const items=[],skipped=new Set();
-  if(isMorse(txt)){
-    toMorse(txt).trim().split(/\s*\/\s*|\s*\n\s*|\s{3,}/).forEach(w=>{
-      const codes=w.split(/\s+/).filter(Boolean);
-      if(!codes.length)return;
-      if(items.length)items.push({sp:1});
-      codes.forEach(c=>{if(!R[c])skipped.add(c);items.push({c:R[c]||'?',code:c})});
-    });
-    return{items,skipped:[...skipped],morse:true};
-  }
-  norm(txt).trim().split(/\s+/).filter(Boolean).forEach(w=>{
-    const chars=[...w].filter(c=>M[c]||!skipped.add(c));
-    if(!chars.length)return;
-    if(items.length)items.push({sp:1});
-    chars.forEach(c=>items.push({c,code:M[c]}));
+const $=id=>document.getElementById(id);
+const msg=$('msg'),tape=$('tape'),code=$('code'),meta=$('meta'),lamp=$('lamp'),flash=$('flash'),statusEl=$('status'),noteEl=$('note'),wpm=$('wpm'),wpmOut=$('wpmOut'),loop=$('loop'),alpha=$('alpha'),alphaMsg=$('alphaMsg');
+const outs={screen:$('oScreen'),sound:$('oSound'),vib:$('oVib'),torch:$('oTorch')};
+const KEY='morse-luce-site-v2';
+const SYM='.\\-·•∙⋅*−–—‒_';
+const DOT=/[.·•∙⋅*]/,DASH=/[-−–—‒_]/;
+const symOf=c=>DOT.test(c)?'.':DASH.test(c)?'-':null;
+const normCode=s=>[...s].map(symOf).join('');
+const isSeq=s=>new RegExp('['+SYM+']').test(s)&&new RegExp('^[\\s'+SYM+'\\/|]+$').test(s);
+const strip=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'');
+const esc=s=>s.replace(/[&<>"]/g,m=>'&#'+m.charCodeAt(0)+';');
+const ORDER=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'];
+const MORSE_ALPHA=ORDER.map(k=>`${k} = ${M[k]}`).join('\n');
+const tVid=Object.assign(document.createElement('video'),{muted:true,playsInline:true});tVid.setAttribute('playsinline','');tVid.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';document.body.appendChild(tVid);
+let mode='text',spaceU=3,run=0,ctx=null,gain=null,tStream=null,tTrack=null,wake=null,curCh=null,curEl=null;
+
+function parseAlpha(){
+  const map={},bad=[];
+  alpha.value.split('\n').forEach((line,n)=>{
+    if(!line.trim())return;
+    const m=line.match(new RegExp('^\\s*(\\S+?)\\s*(?:=|:|\\s)\\s*(['+SYM+']+)\\s*$'));
+    if(m)map[m[1].toUpperCase()]=normCode(m[2]);else bad.push(n+1);
   });
-  return{items,skipped:[...skipped],morse:false};
+  return{map,bad};
 }
-function build(items){
-  const s=[];
-  items.forEach((it,i)=>{
-    if(it.sp){if(s.length)s[s.length-1].u=7;return}
-    [...it.code].forEach((e,j)=>{s.push({on:1,u:e==='.'?1:3,i,j});s.push({on:0,u:1,i,j})});
-    s[s.length-1].u=3;
+function encodeWord(W,map,keys,out,skipped){
+  let i=0;
+  while(i<W.length){
+    const k=keys.find(k=>W.startsWith(k,i));
+    if(k){out.push({code:map[k],label:k});i+=k.length;continue}
+    const ch=String.fromCodePoint(W.codePointAt(i));i+=ch.length;
+    const b=strip(ch);
+    if(map[b])out.push({code:map[b],label:ch});else skipped.add(ch);
+  }
+}
+// tokens: {code,label} = segni da lampeggiare, {gap:n} = pausa di n unità
+function tokens(txt,md){
+  const tk=[],skipped=new Set();
+  if(md==='seq'){
+    for(const ch of txt){
+      const s=symOf(ch),last=tk[tk.length-1];
+      if(s){if(last&&last.code!=null)last.code+=s;else tk.push({code:s,label:''})}
+      else if(ch==='/'||ch==='|'||ch==='\n')tk.push({gap:7});
+      else if(/\s/.test(ch))tk.push({gap:spaceU});
+      else skipped.add(ch);
+    }
+    return{tk,skipped:[...skipped]};
+  }
+  const map=md==='custom'?parseAlpha().map:M;
+  const keys=Object.keys(map).sort((a,b)=>b.length-a.length);
+  txt.toUpperCase().trim().split(/\s+/).filter(Boolean).forEach(w=>{
+    const out=[];encodeWord(w,map,keys,out,skipped);
+    if(!out.length)return;
+    if(tk.length)tk.push({gap:7});
+    tk.push(...out);
   });
-  if(s.length)s[s.length-1].u=7;
+  return{tk,skipped:[...skipped]};
+}
+function build(tk,md){
+  const s=[];
+  tk.forEach((t,i)=>{
+    if(t.gap!=null){const l=s[s.length-1];if(l&&l.trail){l.u=t.gap;l.trail=0}else s.push({on:0,u:t.gap,i});return}
+    [...t.code].forEach((e,j)=>{s.push({on:1,u:e==='.'?1:3,i,j});s.push({on:0,u:1,i,j})});
+    const l=s[s.length-1];l.u=md==='seq'?1:3;l.trail=1;
+  });
+  if(!s.some(x=>x.on))return[];
+  const l=s[s.length-1];l.u=Math.max(l.u,7);
   return s;
 }
 const unitMs=()=>1200/+wpm.value;
 const fmt=ms=>ms<60000?(ms/1000).toFixed(1).replace('.',',')+' s':Math.floor(ms/60000)+' min '+Math.round(ms%60000/1000)+' s';
 
+const HINT={
+  text:['Messaggio','Le lettere vengono trasmesse con l\'alfabeto Morse internazionale.'],
+  custom:['Messaggio','Le lettere vengono trasmesse con il tuo alfabeto, che modifichi qui sotto.'],
+  seq:['Sequenza di punti, linee e spazi','Viene trasmessa esattamente com\'è scritta, senza convertire niente: punto = lampo corto, linea = lampo lungo, spazio = pausa.']
+};
+function setMode(m){
+  mode=m;
+  for(const b of $('mode').children)b.setAttribute('aria-pressed',b.dataset.m===m);
+  $('msgLbl').textContent=HINT[m][0];$('hint').textContent=HINT[m][1];
+  $('keys').classList.toggle('hidden',m!=='seq');
+  $('seqBox').classList.toggle('hidden',m!=='seq');
+  $('presets').classList.toggle('hidden',m==='seq');
+  $('alphaBox').classList.toggle('hidden',m!=='custom');
+  $('codeWrap').classList.toggle('hidden',m==='seq');
+  msg.classList.toggle('mono',m==='seq');
+  render();
+}
+function setSpace(u){spaceU=u;for(const b of $('spSeg').children)b.setAttribute('aria-pressed',+b.dataset.u===u);render()}
+
 function render(){
-  const {items,skipped,morse}=parse(msg.value);
-  tape.innerHTML=items.length?items.map((it,i)=>it.sp?'<span class="gap"></span>':
-    `<span class="ch" data-i="${i}"><b>${it.c.replace(/[&<>"]/g,m=>'&#'+m.charCodeAt(0)+';')}</b><span class="els">${[...it.code].map((e,j)=>`<i class="el ${e==='.'?'d':'l'}" data-j="${j}"></i>`).join('')}</span></span>`).join('')
-    :'<p class="empty">Il messaggio comparirà qui come nastro Morse.</p>';
-  code.textContent=(morse?items.map(it=>it.sp?' ':it.c).join(''):items.map(it=>it.sp?'/':it.code).join(' '))||'—';
-  codeLbl.textContent=morse?'Hai incollato codice Morse: tradotto in testo':'In codice Morse';
-  const units=build(items).reduce((a,b)=>a+b.u,0);
-  meta.textContent=items.length?`Durata circa ${fmt(units*unitMs())}`+(skipped.length?(morse?` · non riconosciuti (trasmessi lo stesso): ${skipped.join(' ')}`:` · ignorati: ${skipped.join(' ')}`):''):'';
+  const {tk,skipped}=tokens(msg.value,mode);
+  tape.innerHTML=tk.some(t=>t.code)?tk.map((t,i)=>t.gap!=null?`<span class="gap" style="width:${4+t.gap*3}px"></span>`:
+    `<span class="ch" data-i="${i}">${t.label?`<b>${esc(t.label)}</b>`:''}<span class="els">${[...t.code].map((e,j)=>`<i class="el ${e==='.'?'d':'l'}" data-j="${j}"></i>`).join('')}</span></span>`).join('')
+    :'<p class="empty">Il messaggio comparirà qui come nastro di lampi.</p>';
+  code.textContent=tk.filter(t=>t.code||t.gap).map(t=>t.gap!=null?'/':t.code).join(' ')||'—';
+  const steps=build(tk,mode),units=steps.reduce((a,b)=>a+b.u,0);
+  let m=steps.length?`Durata circa ${fmt(units*unitMs())}`:'';
+  if(skipped.length)m+=` · ${mode==='custom'?'non presenti nel tuo alfabeto':'ignorati'}: ${skipped.map(c=>c==='\n'?'a capo':c).join(' ')}`;
+  if(mode==='seq'&&steps.length){
+    const read=tk.map(t=>t.gap!=null?(t.gap>=7?' ':''):(R[t.code]||'?')).join('').replace(/\s+/g,' ').trim();
+    m+=` · letta come Morse sarebbe: ${read}`;
+  }
+  meta.textContent=m;
+  $('suggest').classList.toggle('hidden',!(mode==='text'&&isSeq(msg.value)));
+  if(mode==='custom'){const {map,bad}=parseAlpha(),n=Object.keys(map).length;
+    alphaMsg.textContent=(n?`${n} caratteri definiti`:'L\'alfabeto è vuoto: premi «Parti dal Morse» o scrivi righe come A = .-')+(bad.length?` · righe non valide: ${bad.join(', ')}`:'');}
   wpmOut.textContent=`${wpm.value} parole/min · punto ${Math.round(unitMs())} ms`;
   save();
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify({m:msg.value,w:wpm.value,l:loop.checked,o:Object.fromEntries(Object.entries(outs).map(([k,v])=>[k,v.checked]))}))}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d)return;msg.value=d.m??msg.value;wpm.value=d.w??wpm.value;loop.checked=!!d.l;for(const k in outs)if(d.o&&k in d.o)outs[k].checked=d.o[k]}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({m:msg.value,w:wpm.value,l:loop.checked,md:mode,sp:spaceU,a:alpha.value,o:Object.fromEntries(Object.entries(outs).map(([k,v])=>[k,v.checked]))}))}catch(e){}}
+function load(){
+  let d=null;try{d=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+  alpha.value=d&&typeof d.a==='string'?d.a:MORSE_ALPHA;
+  if(d){msg.value=d.m??msg.value;wpm.value=d.w??wpm.value;loop.checked=!!d.l;if([2,3,7].includes(d.sp))spaceU=d.sp;for(const k in outs)if(d.o&&k in d.o)outs[k].checked=d.o[k]}
+  for(const b of $('spSeg').children)b.setAttribute('aria-pressed',+b.dataset.u===spaceU);
+  setMode(d&&HINT[d.md]?d.md:'text');
+}
 
 function audioOn(){
   try{
@@ -237,7 +345,7 @@ function key(on,s,unit,hl,o){
   if(tTrack)tTrack.applyConstraints({advanced:[{torch:!!on}]}).catch(()=>{});
   if(!hl)return;
   if(curEl){curEl.classList.remove('lit');curEl=null}
-  const ch=tape.querySelector(`.ch[data-i="${s.i}"]`);
+  const ch=s.i==null?null:tape.querySelector(`.ch[data-i="${s.i}"]`);
   if(ch!==curCh){curCh&&curCh.classList.remove('cur');curCh=ch;if(ch){ch.classList.add('cur');tape.scrollTo({left:ch.offsetLeft-tape.clientWidth/2+ch.offsetWidth/2,behavior:'smooth'})}}
   if(on&&ch){curEl=ch.querySelector(`[data-j="${s.j}"]`);curEl&&curEl.classList.add('lit')}
 }
@@ -254,9 +362,10 @@ function halt(text){
 function stop(text){run++;halt(text)}
 
 async function play(single){
-  const {items}=parse(single??msg.value),steps=build(items);
-  if(!steps.length){note('Scrivi qualcosa da trasmettere.');return}
-  stop();const id=++run,unit=unitMs(),hl=single==null;
+  const md=single?'text':mode;
+  const {tk}=tokens(single??msg.value,md),steps=build(tk,md);
+  if(!steps.length){note(md==='custom'?'Nessun carattere del messaggio è nel tuo alfabeto.':md==='seq'?'Scrivi o incolla punti e linee da trasmettere.':'Scrivi qualcosa da trasmettere.');return}
+  stop();const id=++run,unit=unitMs(),hl=!single;
   const o=Object.fromEntries(Object.entries(outs).map(([k,v])=>[k,v.checked]));
   note('');
   if(o.sound)audioOn();
@@ -273,29 +382,24 @@ async function play(single){
   if(id===run)stop('Trasmissione finita');
 }
 
-$('chart').innerHTML=Object.keys(M).filter(k=>/[A-Z0-9]/.test(k)).map(k=>`<button data-k="${k}"><b>${k}</b><span>${M[k]}</span></button>`).join('');
-$('chart').addEventListener('click',e=>{const b=e.target.closest('button');if(b)play(b.dataset.k)});
-$('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(b){msg.value=b.dataset.p;render()}});
-$('play').addEventListener('click',()=>play());
-$('stop').addEventListener('click',()=>stop('Fermato'));
-flash.addEventListener('click',()=>stop('Fermato'));
-$('copy').addEventListener('click',async e=>{const b=e.currentTarget;try{await navigator.clipboard.writeText(code.textContent);b.textContent='Copiato'}catch(err){b.textContent='Non copiato'}setTimeout(()=>b.textContent='Copia',1500)});
 function insert(t){
   const a=msg.selectionStart??msg.value.length,b=msg.selectionEnd??a;
   msg.value=msg.value.slice(0,a)+t+msg.value.slice(b);
   msg.selectionStart=msg.selectionEnd=a+t.length;render();
 }
+$('chart').innerHTML=ORDER.map(k=>`<button data-k="${k}"><b>${k}</b><span>${M[k]}</span></button>`).join('');
+$('chart').addEventListener('click',e=>{const b=e.target.closest('button');if(b)play(b.dataset.k)});
+$('mode').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.m)});
+$('spSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setSpace(+b.dataset.u)});
+$('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(b){msg.value=b.dataset.p;render()}});
+$('toSeq').addEventListener('click',()=>setMode('seq'));
 $('keys').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});
 $('keys').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b||b.id)return;
+  const b=e.target.closest('button');if(!b)return;
   if(b.dataset.del){const a=msg.selectionStart??msg.value.length,z=msg.selectionEnd??a;
     if(a!==z){msg.value=msg.value.slice(0,a)+msg.value.slice(z);msg.selectionStart=msg.selectionEnd=a}
     else if(a>0){msg.value=msg.value.slice(0,a-1)+msg.value.slice(a);msg.selectionStart=msg.selectionEnd=a-1}
     render();return}
-  if(msg.value.trim()&&!isMorse(msg.value)){
-    msg.value=parse(msg.value).items.map(it=>it.sp?'/':it.code).join(' ')+' ';
-    msg.selectionStart=msg.selectionEnd=msg.value.length;
-  }
   insert(b.dataset.ins);
 });
 $('paste').addEventListener('click',async()=>{
@@ -303,12 +407,22 @@ $('paste').addEventListener('click',async()=>{
   catch(e){msg.focus();msg.select();note('Tieni premuto nel riquadro del messaggio e scegli Incolla.')}
 });
 $('clear').addEventListener('click',()=>{msg.value='';render();msg.focus()});
+$('aMorse').addEventListener('click',()=>{alpha.value=MORSE_ALPHA;render()});
+$('aClear').addEventListener('click',()=>{alpha.value='';render();alpha.focus()});
+async function copyText(btn,text){try{await navigator.clipboard.writeText(text);btn.textContent='Copiato'}catch(err){btn.textContent='Non copiato'}setTimeout(()=>btn.textContent=btn.dataset.l,1500)}
+$('aCopy').dataset.l='Copia alfabeto';$('copy').dataset.l='Copia';
+$('aCopy').addEventListener('click',e=>copyText(e.currentTarget,alpha.value));
+$('copy').addEventListener('click',e=>copyText(e.currentTarget,code.textContent));
+$('play').addEventListener('click',()=>play());
+$('stop').addEventListener('click',()=>stop('Fermato'));
+flash.addEventListener('click',()=>stop('Fermato'));
 msg.addEventListener('input',render);
+alpha.addEventListener('input',render);
 wpm.addEventListener('input',render);
 loop.addEventListener('change',save);
 Object.values(outs).forEach(c=>c.addEventListener('change',save));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')stop('Fermato')});
-load();render();
+load();
 }
 </script>
 </body>
