@@ -1,4 +1,4 @@
-# Morse a luce
+# Code Lux
 
 Scrivi un messaggio e la torcia del telefono lo lampeggia in codice Morse. Se la torcia non è disponibile lampeggia lo schermo; si possono aggiungere suono e vibrazione.
 
