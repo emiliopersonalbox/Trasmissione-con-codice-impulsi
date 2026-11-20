@@ -50,6 +50,7 @@ textarea:focus-visible,button:focus-visible,input:focus-visible,.chip:has(input:
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 button{font:inherit;font-weight:600;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
 button:active{transform:translateY(1px)}
+button:disabled{opacity:.45;cursor:not-allowed}
 .primary{background:var(--sig);border-color:var(--sig);color:#fff;font-size:18px;flex:1 1 160px;min-height:56px}
 .ghost{flex:0 1 120px;min-height:56px}
 .seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;margin-top:8px}
@@ -83,6 +84,28 @@ output{color:var(--mute);white-space:nowrap}
 .chart button{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:0 12px}
 .chart button span{font:600 15px ui-monospace,Menlo,monospace;color:var(--lamp);letter-spacing:.08em}
 .how{color:var(--mute);font-size:15px;max-width:70ch}
+.remote{display:grid;gap:14px;padding:18px}
+.remote .sub{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.chrow{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.chrow code,.share code{font:600 15px ui-monospace,Menlo,monospace;color:var(--lamp);overflow-wrap:anywhere}
+.send{width:100%}
+.rxopts{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+select{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.rxstate{margin:0;font-weight:600;color:var(--mute)}
+.rxstate.live{color:var(--sig)}
+.queue{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.queue li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+.queue li .t{font-variant-numeric:tabular-nums;color:var(--mute);white-space:nowrap}
+.queue li .x{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:ui-monospace,Menlo,monospace}
+.queue li .s{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:#ffffff12;color:var(--mute);white-space:nowrap}
+.queue li.play{border-color:var(--sig)}.queue li.play .s{background:var(--sig);color:#fff}
+.queue li.done{opacity:.6}
+.share{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.qr{width:168px;flex:none;background:#fff;border-radius:10px;padding:6px;line-height:0}
+.qr:empty{display:none}
+.qr svg{width:100%;height:auto}
+.chbanner{background:#ff4a3d18;border:1px solid var(--sig);border-radius:14px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+#rxBtn.on{background:var(--panel);color:var(--sig)}
 .hidden{display:none!important}
 #flash{position:fixed;inset:0;z-index:50;background:#000;display:none;align-items:flex-end;justify-content:center;padding:28px;cursor:pointer}
 #flash.show{display:flex}#flash.on{background:#fff}
@@ -95,6 +118,7 @@ output{color:var(--mute);white-space:nowrap}
   <div class="wrap">
     <h1>Code Lux</h1>
     <p class="lead">Scrivi un messaggio e premi Trasmetti: la torcia del telefono lo lampeggia in codice Morse. Se la torcia non è disponibile lampeggia lo schermo; puoi aggiungere suono e vibrazione.</p>
+    <button id="goRemote" style="margin-top:12px">Ricevitore e invio a distanza ↓</button>
   </div>
 </header>
 
@@ -107,6 +131,10 @@ output{color:var(--mute);white-space:nowrap}
     </section>
 
     <section class="panel">
+      <div class="chbanner hidden" id="chBanner">
+        <span>Sei collegato a un ricevitore. Scrivi il messaggio qui sotto e premi «Invia al ricevitore».</span>
+        <button id="goSend">Vai a Invia</button>
+      </div>
       <div>
         <span class="lbl">Cosa trasmettere</span>
         <div class="seg" id="mode" role="group" aria-label="Modalità">
@@ -178,6 +206,40 @@ output{color:var(--mute);white-space:nowrap}
         <button class="ghost" id="stop">Ferma</button>
       </div>
       <p class="note" id="note"></p>
+
+      <div class="box remote" id="remote">
+        <h2 style="margin-bottom:4px">A distanza</h2>
+        <p class="hint">Un telefono fa da <b>ricevitore</b>: resta acceso su questa pagina e trasmette da solo, uno dopo l'altro, i messaggi che arrivano sul suo canale, scrivendoli anche qui sopra. Chi ha il link del canale può mandargli messaggi da questa stessa pagina.</p>
+        <div id="remoteOn">
+          <div class="chrow"><span class="lbl">Canale</span><code id="chName">—</code><button id="chNew">Nuovo canale</button></div>
+
+          <div class="sub">
+            <span class="lbl">Invia al ricevitore</span>
+            <p class="meta">Manda il messaggio scritto sopra, con la modalità scelta (e il tuo alfabeto, se lo usi).</p>
+            <button class="primary send" id="sendBtn">Invia al ricevitore</button>
+            <p class="note" id="sendState"></p>
+          </div>
+
+          <div class="sub">
+            <span class="lbl">Questo telefono fa da ricevitore</span>
+            <div class="rxopts">
+              <label for="gap">Pausa tra un messaggio e l'altro</label>
+              <select id="gap"><option value="2">2 s</option><option value="3" selected>3 s</option><option value="5">5 s</option><option value="10">10 s</option></select>
+            </div>
+            <button class="primary" id="rxBtn">Avvia ricevitore</button>
+            <p class="rxstate" id="rxState" aria-live="polite">Spento</p>
+            <ol class="queue" id="queue"></ol>
+            <p class="meta">Tieni la pagina aperta in primo piano: se cambi app o lo schermo si spegne, il telefono sospende la pagina. I messaggi arrivati nel frattempo restano in coda fino a 12 ore e vengono trasmessi quando riapri e riavvii il ricevitore.</p>
+          </div>
+
+          <div class="sub">
+            <span class="lbl">Link per chi invia</span>
+            <div class="share"><div class="qr" id="qr"></div><div><code id="chLink"></code><div class="row" style="margin-top:8px"><button id="chCopy">Copia link</button></div></div></div>
+          </div>
+          <p class="meta">I messaggi passano da ntfy.sh, un servizio gratuito di notifiche: restano lì al massimo 12 ore, e chi conosce il nome del canale può leggerli e inviarne. Non usarlo per cose private.</p>
+        </div>
+        <p class="note hidden" id="remoteOff">L'invio e il ricevitore funzionano solo sul sito.</p>
+      </div>
     </section>
   </div>
 </main>
@@ -193,6 +255,7 @@ output{color:var(--mute);white-space:nowrap}
 
 <div id="flash" role="button" aria-label="Ferma la trasmissione"><span>Tocca per fermare</span></div>
 
+<script src="qrcode.js"></script>
 <script>
 {
 const M={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',
@@ -349,37 +412,166 @@ function key(on,s,unit,hl,o){
   if(ch!==curCh){curCh&&curCh.classList.remove('cur');curCh=ch;if(ch){ch.classList.add('cur');tape.scrollTo({left:ch.offsetLeft-tape.clientWidth/2+ch.offsetWidth/2,behavior:'smooth'})}}
   if(on&&ch){curEl=ch.querySelector(`[data-j="${s.j}"]`);curEl&&curEl.classList.add('lit')}
 }
-function halt(text){
-  lamp.classList.remove('on');flash.classList.remove('on','show');
+function dark(){
+  lamp.classList.remove('on');flash.classList.remove('on');
   if(gain)gain.gain.setTargetAtTime(0,ctx.currentTime,.004);
   try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}
-  torchStop();
+  if(tTrack)tTrack.applyConstraints({advanced:[{torch:false}]}).catch(()=>{});
+  curCh&&curCh.classList.remove('cur');curEl&&curEl.classList.remove('lit');curCh=curEl=null;
+}
+function wakeOn(){try{navigator.wakeLock&&!wake&&navigator.wakeLock.request('screen').then(w=>{wake=w;w.addEventListener('release',()=>{if(wake===w)wake=null})}).catch(()=>{})}catch(e){}}
+// accende le uscite scelte; la parte sincrona va chiamata dentro il tocco dell'utente
+async function outputsOn(o,gesture){
+  if(o.sound)audioOn();
+  if(o.screen){flash.classList.add('show');if(gesture)try{const p=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();p&&p.catch(()=>{})}catch(e){}}
+  wakeOn();
+  if(o.torch&&!tTrack){const ok=await torchStart();if(!ok&&!o.screen)flash.classList.add('show');return ok}
+  return true;
+}
+function outputsOff(){
+  flash.classList.remove('show');torchStop();
   if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
   if(wake){wake.release().catch(()=>{});wake=null}
-  curCh&&curCh.classList.remove('cur');curEl&&curEl.classList.remove('lit');curCh=curEl=null;
-  statusEl.classList.remove('live');statusEl.textContent=text||'Pronto';
 }
+function halt(text){dark();outputsOff();statusEl.classList.remove('live');statusEl.textContent=text||'Pronto'}
 function stop(text){run++;halt(text)}
+async function runSteps(steps,unit,hl,o,id,rep){
+  let t=performance.now();
+  do{for(const s of steps){if(id!==run)return false;key(s.on,s,unit,hl,o);t+=s.u*unit;await until(t)}}
+  while(rep&&id===run);
+  return id===run;
+}
+const outOpts=()=>Object.fromEntries(Object.entries(outs).map(([k,v])=>[k,v.checked]));
+const emptyMsg=md=>md==='custom'?'Nessun carattere del messaggio è nel tuo alfabeto.':md==='seq'?'Scrivi o incolla punti e linee da trasmettere.':'Scrivi qualcosa da trasmettere.';
 
 async function play(single){
+  if(receiving){note('Il ricevitore è acceso: fermalo per trasmettere a mano.');return}
   const md=single?'text':mode;
   const {tk}=tokens(single??msg.value,md),steps=build(tk,md);
-  if(!steps.length){note(md==='custom'?'Nessun carattere del messaggio è nel tuo alfabeto.':md==='seq'?'Scrivi o incolla punti e linee da trasmettere.':'Scrivi qualcosa da trasmettere.');return}
+  if(!steps.length){note(emptyMsg(md));return}
   stop();const id=++run,unit=unitMs(),hl=!single;
-  const o=Object.fromEntries(Object.entries(outs).map(([k,v])=>[k,v.checked]));
+  const o=outOpts();if(single){o.screen=false;o.torch=false}
   note('');
-  if(o.sound)audioOn();
-  if(o.screen&&!single){flash.classList.add('show');try{const p=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();p&&p.catch(()=>{})}catch(e){}}
-  try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>{wake=w}).catch(()=>{})}catch(e){}
   statusEl.classList.add('live');statusEl.textContent=single?`Trasmetto ${single}`:'Trasmissione in corso…';
-  if(o.torch&&!single){
-    const ok=await torchStart();if(id!==run){torchStop();return}
-    if(!ok&&!o.screen)flash.classList.add('show');
-  }
-  let t=performance.now();
-  do{for(const s of steps){if(id!==run)return;key(s.on,s,unit,hl,o);t+=s.u*unit;await until(t)}}
-  while(loop.checked&&!single&&id===run);
-  if(id===run)stop('Trasmissione finita');
+  await outputsOn(o,true);
+  if(id!==run)return;
+  if(await runSteps(steps,unit,hl,o,id,loop.checked&&!single))stop('Trasmissione finita');
+}
+
+/* ---------- A distanza: canale ntfy.sh, ricevitore con coda, invio ---------- */
+const HOSTED=true;
+const NTFY='https://ntfy.sh';
+let ch='',receiving=false,busy=false,rxReady=false,lastEnd=0,es=null,reTimer=null,rxO=null,rxMode='text',queue=[],seen=new Set();
+const chOk=c=>/^[-_A-Za-z0-9]{1,64}$/.test(c);
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function randomCh(){const a='abcdefghijkmnpqrstuvwxyz23456789',r=new Uint8Array(14);crypto.getRandomValues(r);return'codelux_'+[...r].map(x=>a[x%a.length]).join('')}
+const lastKey=()=>'codelux-last-'+ch;
+function setChannel(c,fresh){
+  ch=c;lsSet('codelux-ch',c);
+  if(fresh||!lsGet(lastKey()))lsSet(lastKey(),String(Math.floor(Date.now()/1000)-5));
+  $('chName').textContent=c;
+  const link=location.origin+location.pathname+'#c='+c;
+  $('chLink').textContent=link;
+  const qr=$('qr');qr.innerHTML='';
+  try{if(window.qrcode){const q=qrcode(0,'M');q.addData(link);q.make();qr.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}}catch(e){}
+}
+function rxState(t,live){const el=$('rxState');el.textContent=t;el.classList.toggle('live',!!live);
+  flash.querySelector('span').textContent=receiving?`${t} · tocca per fermare il ricevitore`:'Tocca per fermare'}
+const hhmm=s=>new Date(s*1000).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+const ST={wait:'in coda',play:'in onda',done:'fatto',skip:'vuoto',stop:'interrotto'};
+function renderQueue(){
+  const items=queue.slice(-15).reverse();
+  $('queue').innerHTML=items.map(q=>`<li class="${q.st}"><span class="t">${hhmm(q.time)}</span><span class="x">${esc(q.t.replace(/\s+/g,' ').slice(0,80))||'—'}</span><span class="s">${ST[q.st]}</span></li>`).join('');
+  const n=queue.filter(q=>q.st==='wait').length;
+  if(receiving&&!busy)rxState(es&&es.readyState===1?(n?`${n} in coda`:'In ascolto: nessun messaggio in coda'):'Collegamento…',true);
+}
+function enqueue(d){
+  let m=null,t=d.message||'',a=null;
+  try{const j=JSON.parse(t);if(j&&j.app==='codelux'&&typeof j.t==='string'){m=j.m;t=j.t;a=typeof j.a==='string'?j.a:null}}catch(e){}
+  if(!HINT[m])m=rxMode;
+  queue.push({id:d.id,time:d.time||Math.floor(Date.now()/1000),m,t,a,st:'wait'});
+  renderQueue();processQueue();
+}
+function connect(){
+  if(!receiving)return;
+  const since=lsGet(lastKey())||'all';
+  try{es=new EventSource(`${NTFY}/${ch}/sse?since=${encodeURIComponent(since)}`)}catch(e){rxState('Il browser non riesce a collegarsi.');return}
+  es.onopen=()=>renderQueue();
+  es.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(err){return}
+    if(d.event!=='message'||!d.id||seen.has(d.id))return;seen.add(d.id);enqueue(d)};
+  es.onerror=()=>{if(!receiving)return;es.close();es=null;rxState('Connessione persa, riprovo…',true);clearTimeout(reTimer);reTimer=setTimeout(connect,4000)};
+}
+async function processQueue(){
+  if(!receiving||busy||!rxReady)return;
+  const q=queue.find(x=>x.st==='wait');
+  if(!q){renderQueue();return}
+  busy=true;
+  const wait=lastEnd+(+$('gap').value||3)*1000-Date.now();
+  if(wait>0){rxState('Pausa prima del prossimo messaggio',true);const gid=run;await new Promise(r=>setTimeout(r,wait));if(!receiving||gid!==run||q.st!=='wait'){busy=false;return}}
+  q.st='play';
+  if(q.a!=null)alpha.value=q.a;
+  msg.value=q.t;setMode(q.m);
+  rxState('Trasmetto un messaggio della coda',true);renderQueue();
+  const {tk}=tokens(q.t,q.m),steps=build(tk,q.m),id=++run;
+  statusEl.classList.add('live');statusEl.textContent='Trasmissione dalla coda…';
+  const ok=steps.length?await runSteps(steps,unitMs(),true,rxO,id,false):true;
+  dark();
+  if(!receiving||!ok){busy=false;return}
+  q.st=steps.length?'done':'skip';lsSet(lastKey(),q.id);lastEnd=Date.now();
+  statusEl.classList.remove('live');statusEl.textContent='Ricevitore acceso';
+  busy=false;renderQueue();processQueue();
+}
+async function rxStart(){
+  if(!HOSTED)return;
+  if(!ch)setChannel(randomCh(),true);
+  stop();note('');receiving=true;rxO=outOpts();rxMode=mode;
+  queue=queue.filter(q=>q.st==='done'||q.st==='skip');seen=new Set(queue.map(q=>q.id));
+  $('rxBtn').textContent='Ferma ricevitore';$('rxBtn').classList.add('on');$('play').disabled=true;
+  statusEl.classList.remove('live');statusEl.textContent='Ricevitore acceso';
+  rxState('Collegamento…',true);
+  rxReady=false;lastEnd=0;
+  const p=outputsOn(rxO,true);
+  connect();
+  await p;
+  if(!receiving)return;
+  rxReady=true;processQueue();
+}
+function rxStop(){
+  receiving=false;rxReady=false;clearTimeout(reTimer);if(es){es.close();es=null}
+  queue.forEach(q=>{if(q.st==='play'||q.st==='wait')q.st='stop'});
+  busy=false;stop('Ricevitore fermato');
+  $('rxBtn').textContent='Avvia ricevitore';$('rxBtn').classList.remove('on');$('play').disabled=false;
+  rxState('Spento');renderQueue();
+}
+async function send(){
+  const st=$('sendState'),btn=$('sendBtn');
+  if(!ch){st.textContent='Prima apri il link di un ricevitore o crea un canale.';return}
+  if(!msg.value.trim()){st.textContent='Scrivi prima il messaggio da inviare.';return}
+  const env={app:'codelux',v:1,m:mode,t:msg.value};
+  if(mode==='custom')env.a=alpha.value;
+  const body=JSON.stringify(env);
+  if(new Blob([body]).size>4000){st.textContent='Messaggio troppo lungo per l\'invio: accorcialo (o accorcia l\'alfabeto).';return}
+  btn.disabled=true;st.textContent='Invio…';
+  try{const r=await fetch(`${NTFY}/${ch}`,{method:'POST',body});if(!r.ok)throw new Error(String(r.status));
+    st.textContent=`Inviato alle ${hhmm(Date.now()/1000)}: il ricevitore lo trasmette appena tocca a lui.`}
+  catch(e){st.textContent=e.message==='429'?'Troppi invii ravvicinati: aspetta qualche secondo e riprova.':'Invio non riuscito: controlla la connessione e riprova.'}
+  finally{btn.disabled=false}
+}
+function initRemote(){
+  if(!HOSTED){$('remoteOn').classList.add('hidden');$('remoteOff').classList.remove('hidden');return}
+  const h=location.hash.match(/^#c=([-_A-Za-z0-9]{1,64})$/);
+  if(h){setChannel(h[1],false);$('chBanner').classList.remove('hidden')}
+  else{const c=lsGet('codelux-ch');if(c&&chOk(c))setChannel(c,false)}
+  $('chNew').addEventListener('click',()=>{if(receiving)rxStop();setChannel(randomCh(),true);$('sendState').textContent='';history.replaceState(null,'',location.pathname+'#c='+ch)});
+  $('chCopy').dataset.l='Copia link';
+  $('chCopy').addEventListener('click',e=>{if(!ch)setChannel(randomCh(),true);copyText(e.currentTarget,$('chLink').textContent)});
+  $('rxBtn').addEventListener('click',()=>receiving?rxStop():rxStart());
+  $('sendBtn').addEventListener('click',send);
+  $('goRemote').addEventListener('click',()=>$('remote').scrollIntoView({behavior:'smooth',block:'start'}));
+  $('goSend').addEventListener('click',()=>$('sendBtn').scrollIntoView({behavior:'smooth',block:'center'}));
+  window.addEventListener('hashchange',()=>{const m=location.hash.match(/^#c=([-_A-Za-z0-9]{1,64})$/);if(m&&m[1]!==ch){if(receiving)rxStop();setChannel(m[1],false);$('chBanner').classList.remove('hidden')}});
+  document.addEventListener('visibilitychange',()=>{if(receiving&&document.visibilityState==='visible'){wakeOn();if(!es)connect()}});
 }
 
 function insert(t){
@@ -414,15 +606,16 @@ $('aCopy').dataset.l='Copia alfabeto';$('copy').dataset.l='Copia';
 $('aCopy').addEventListener('click',e=>copyText(e.currentTarget,alpha.value));
 $('copy').addEventListener('click',e=>copyText(e.currentTarget,code.textContent));
 $('play').addEventListener('click',()=>play());
-$('stop').addEventListener('click',()=>stop('Fermato'));
-flash.addEventListener('click',()=>stop('Fermato'));
+$('stop').addEventListener('click',()=>receiving?rxStop():stop('Fermato'));
+flash.addEventListener('click',()=>receiving?rxStop():stop('Fermato'));
 msg.addEventListener('input',render);
 alpha.addEventListener('input',render);
 wpm.addEventListener('input',render);
 loop.addEventListener('change',save);
 Object.values(outs).forEach(c=>c.addEventListener('change',save));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')stop('Fermato')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')receiving?rxStop():stop('Fermato')});
 load();
+initRemote();
 }
 </script>
 </body>
