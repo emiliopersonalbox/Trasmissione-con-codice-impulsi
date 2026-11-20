@@ -51,6 +51,9 @@ button{font:inherit;font-weight:600;min-height:44px;padding:0 16px;border-radius
 button:active{transform:translateY(1px)}
 .primary{background:var(--sig);border-color:var(--sig);color:#fff;font-size:18px;flex:1 1 160px;min-height:56px}
 .ghost{flex:0 1 120px;min-height:56px}
+.keys{gap:6px}
+.keys button{flex:1 1 44px;padding:0 10px;font-size:20px;min-width:48px}
+.keys button.wide{flex:1 1 80px;font-size:15px}
 .code{display:flex;gap:10px;align-items:flex-start;background:#0a0f11;border:1px solid var(--line);border-radius:14px;padding:10px 10px 10px 14px}
 .code code{flex:1;font:600 17px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--lamp);overflow-wrap:anywhere;padding-top:6px}
 .code button{flex:none}
@@ -93,14 +96,19 @@ output{color:var(--mute);white-space:nowrap}
     <section class="panel">
       <div>
         <label for="msg">Messaggio</label>
-        <textarea id="msg" rows="3" autocomplete="off">SOS</textarea>
+        <textarea id="msg" rows="3" autocomplete="off" autocapitalize="characters" spellcheck="false">SOS</textarea>
+        <p class="meta" style="margin:4px 0 8px">Scrivi un testo oppure incolla punti e linee: lettere separate da uno spazio, parole separate da / o da un a capo.</p>
+        <div class="row keys" id="keys">
+          <button data-ins="." aria-label="Punto">·</button><button data-ins="-" aria-label="Linea">–</button><button data-ins=" " class="wide">Spazio</button><button data-ins=" / " class="wide">/ parola</button><button data-del="1" aria-label="Cancella">⌫</button><button id="paste" class="wide">Incolla</button><button id="clear" class="wide">Svuota</button>
+        </div>
         <div class="row" style="margin-top:8px" id="presets">
           <button data-p="SOS">SOS</button><button data-p="CIAO">CIAO</button><button data-p="AIUTO">AIUTO</button><button data-p="TUTTO OK">TUTTO OK</button>
         </div>
       </div>
 
       <div>
-        <div class="code"><code id="code"></code><button id="copy">Copia</button></div>
+        <span class="lbl" id="codeLbl">In codice Morse</span>
+        <div class="code" style="margin-top:6px"><code id="code"></code><button id="copy">Copia</button></div>
         <p class="meta" id="meta"></p>
       </div>
 
@@ -146,22 +154,34 @@ const M={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..'
 '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
 '.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-','"':'.-..-.','@':'.--.-.'};
 const $=id=>document.getElementById(id);
-const msg=$('msg'),tape=$('tape'),code=$('code'),meta=$('meta'),lamp=$('lamp'),flash=$('flash'),statusEl=$('status'),noteEl=$('note'),wpm=$('wpm'),wpmOut=$('wpmOut'),loop=$('loop');
+const msg=$('msg'),tape=$('tape'),code=$('code'),codeLbl=$('codeLbl'),meta=$('meta'),lamp=$('lamp'),flash=$('flash'),statusEl=$('status'),noteEl=$('note'),wpm=$('wpm'),wpmOut=$('wpmOut'),loop=$('loop');
 const outs={screen:$('oScreen'),sound:$('oSound'),vib:$('oVib'),torch:$('oTorch')};
 const KEY='morse-luce-site-v1';
 const tVid=Object.assign(document.createElement('video'),{muted:true,playsInline:true});tVid.setAttribute('playsinline','');tVid.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';document.body.appendChild(tVid);
 let run=0,ctx=null,gain=null,tStream=null,tTrack=null,wake=null,curCh=null,curEl=null;
 
 const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+const R=Object.fromEntries(Object.entries(M).map(([k,v])=>[v,k]));
+const toMorse=s=>s.replace(/[·•∙⋅*]/g,'.').replace(/[−–—‒_]/g,'-').replace(/\|/g,'/');
+const isMorse=s=>/[.\-·•∙⋅*−–—‒_]/.test(s)&&/^[\s.\-·•∙⋅*−–—‒_\/|]+$/.test(s);
 function parse(txt){
   const items=[],skipped=new Set();
+  if(isMorse(txt)){
+    toMorse(txt).trim().split(/\s*\/\s*|\s*\n\s*|\s{3,}/).forEach(w=>{
+      const codes=w.split(/\s+/).filter(Boolean);
+      if(!codes.length)return;
+      if(items.length)items.push({sp:1});
+      codes.forEach(c=>{if(!R[c])skipped.add(c);items.push({c:R[c]||'?',code:c})});
+    });
+    return{items,skipped:[...skipped],morse:true};
+  }
   norm(txt).trim().split(/\s+/).filter(Boolean).forEach(w=>{
     const chars=[...w].filter(c=>M[c]||!skipped.add(c));
     if(!chars.length)return;
     if(items.length)items.push({sp:1});
     chars.forEach(c=>items.push({c,code:M[c]}));
   });
-  return{items,skipped:[...skipped]};
+  return{items,skipped:[...skipped],morse:false};
 }
 function build(items){
   const s=[];
@@ -177,13 +197,14 @@ const unitMs=()=>1200/+wpm.value;
 const fmt=ms=>ms<60000?(ms/1000).toFixed(1).replace('.',',')+' s':Math.floor(ms/60000)+' min '+Math.round(ms%60000/1000)+' s';
 
 function render(){
-  const {items,skipped}=parse(msg.value);
+  const {items,skipped,morse}=parse(msg.value);
   tape.innerHTML=items.length?items.map((it,i)=>it.sp?'<span class="gap"></span>':
     `<span class="ch" data-i="${i}"><b>${it.c.replace(/[&<>"]/g,m=>'&#'+m.charCodeAt(0)+';')}</b><span class="els">${[...it.code].map((e,j)=>`<i class="el ${e==='.'?'d':'l'}" data-j="${j}"></i>`).join('')}</span></span>`).join('')
     :'<p class="empty">Il messaggio comparirà qui come nastro Morse.</p>';
-  code.textContent=items.map(it=>it.sp?'/':it.code).join(' ')||'—';
+  code.textContent=(morse?items.map(it=>it.sp?' ':it.c).join(''):items.map(it=>it.sp?'/':it.code).join(' '))||'—';
+  codeLbl.textContent=morse?'Hai incollato codice Morse: tradotto in testo':'In codice Morse';
   const units=build(items).reduce((a,b)=>a+b.u,0);
-  meta.textContent=items.length?`Durata circa ${fmt(units*unitMs())}`+(skipped.length?` · ignorati: ${skipped.join(' ')}`:''):'';
+  meta.textContent=items.length?`Durata circa ${fmt(units*unitMs())}`+(skipped.length?(morse?` · non riconosciuti (trasmessi lo stesso): ${skipped.join(' ')}`:` · ignorati: ${skipped.join(' ')}`):''):'';
   wpmOut.textContent=`${wpm.value} parole/min · punto ${Math.round(unitMs())} ms`;
   save();
 }
@@ -259,6 +280,29 @@ $('play').addEventListener('click',()=>play());
 $('stop').addEventListener('click',()=>stop('Fermato'));
 flash.addEventListener('click',()=>stop('Fermato'));
 $('copy').addEventListener('click',async e=>{const b=e.currentTarget;try{await navigator.clipboard.writeText(code.textContent);b.textContent='Copiato'}catch(err){b.textContent='Non copiato'}setTimeout(()=>b.textContent='Copia',1500)});
+function insert(t){
+  const a=msg.selectionStart??msg.value.length,b=msg.selectionEnd??a;
+  msg.value=msg.value.slice(0,a)+t+msg.value.slice(b);
+  msg.selectionStart=msg.selectionEnd=a+t.length;render();
+}
+$('keys').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});
+$('keys').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b||b.id)return;
+  if(b.dataset.del){const a=msg.selectionStart??msg.value.length,z=msg.selectionEnd??a;
+    if(a!==z){msg.value=msg.value.slice(0,a)+msg.value.slice(z);msg.selectionStart=msg.selectionEnd=a}
+    else if(a>0){msg.value=msg.value.slice(0,a-1)+msg.value.slice(a);msg.selectionStart=msg.selectionEnd=a-1}
+    render();return}
+  if(msg.value.trim()&&!isMorse(msg.value)){
+    msg.value=parse(msg.value).items.map(it=>it.sp?'/':it.code).join(' ')+' ';
+    msg.selectionStart=msg.selectionEnd=msg.value.length;
+  }
+  insert(b.dataset.ins);
+});
+$('paste').addEventListener('click',async()=>{
+  try{const t=await navigator.clipboard.readText();if(!t)throw 0;msg.value=t;render();note('')}
+  catch(e){msg.focus();msg.select();note('Tieni premuto nel riquadro del messaggio e scegli Incolla.')}
+});
+$('clear').addEventListener('click',()=>{msg.value='';render();msg.focus()});
 msg.addEventListener('input',render);
 wpm.addEventListener('input',render);
 loop.addEventListener('change',save);
